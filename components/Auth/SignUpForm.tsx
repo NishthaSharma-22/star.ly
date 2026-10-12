@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { ShowPassword } from "./ShowPassword";
 
 function SignUpForm() {
   const router = useRouter();
@@ -72,13 +73,10 @@ function SignUpForm() {
 
       <div className="flex flex-col gap-2">
         <label htmlFor="password">Password</label>
-        <input
+        <ShowPassword
           id="password"
           name="password"
-          type="password"
           autoComplete="new-password"
-          minLength={8}
-          className="px-1 py-1 border focus:outline-none"
           required
         />
       </div>

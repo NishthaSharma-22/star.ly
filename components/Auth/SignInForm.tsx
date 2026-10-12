@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { ShowPassword } from "./ShowPassword";
 
 function SignInForm() {
   const router = useRouter();
@@ -29,9 +30,7 @@ function SignInForm() {
       });
 
       if (error) {
-        setErrorMessage(
-          error.message ?? "Incorrect login credentials.",
-        );
+        setErrorMessage(error.message ?? "Incorrect login credentials.");
         setPending(false);
         return;
       }
@@ -59,12 +58,10 @@ function SignInForm() {
 
       <div className="flex flex-col gap-2">
         <label htmlFor="password">Password</label>
-        <input
+        <ShowPassword
           id="password"
           name="password"
-          type="password"
           autoComplete="current-password"
-          className="px-1 py-1 border focus:outline-none"
           required
         />
       </div>
