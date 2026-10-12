@@ -4,7 +4,7 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
     DATABASE_URL_POOLED: z.url(),
-    BETTER_AUTH_SECRET: z.url(),
+    BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
   },
   client: {},
