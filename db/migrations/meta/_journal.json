@@ -8,6 +8,13 @@
       "when": 1791796744696,
       "tag": "0000_woozy_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791807812045,
+      "tag": "0001_noisy_absorbing_man",
+      "breakpoints": true
     }
   ]
 }

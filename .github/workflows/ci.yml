@@ -9,6 +9,8 @@ jobs:
         env:
             DATABASE_URL: postgres://test:test@localhost:5432/test
             DATABASE_URL_POOLED: postgres://test:test@localhost:5432/test
+            BETTER_AUTH_SECRET: ci-dummy-secret-not-real-0123456789abcdef
+            BETTER_AUTH_URL: http://localhost:3000
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
