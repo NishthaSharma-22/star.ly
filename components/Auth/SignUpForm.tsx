@@ -38,7 +38,7 @@ function SignUpForm() {
         setPending(false);
         return;
       }
-      router.push("/");
+      router.push("/dashboard");
       router.refresh();
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
