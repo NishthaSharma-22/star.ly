@@ -1,5 +1,3 @@
-import { SignOutButton } from "@/components/Auth/SignOutButton";
-import Navbar from "@/components/LandingPageUI/Navbar";
 import { requireSession } from "@/lib/auth-utils";
 import { Suspense } from "react";
 
@@ -8,10 +6,7 @@ async function DashboardContent(){
 
     return(
         <>
-        <Navbar />
-        <h1 className="text-2xl font-semibold">Hi, {user.name}</h1>
-        <p className="text-muted-foreground">Practice dashboard coming soon</p>
-        <SignOutButton />
+        <h1 className="text-2xl font-semibold mt-5 px-4">Hi, {user.name}</h1>
         </>
     )
 }
@@ -20,7 +15,7 @@ async function DashboardContent(){
 export default function DashboardPage(){
     return(
         <main>
-            <Suspense fallback={<p>Loading...</p>}>
+            <Suspense fallback={<p className="text-center my-auto">Loading...</p>}>
                 <DashboardContent />
             </Suspense>
         </main>
