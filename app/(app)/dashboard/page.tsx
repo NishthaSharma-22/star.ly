@@ -6,7 +6,7 @@ async function DashboardContent(){
 
     return(
         <>
-        <h1 className="text-2xl font-semibold mt-5 px-4">Hi, {user.name}</h1>
+        <h1 className="text-2xl font-semibold mt-5 px-4">Hi, {user.name.toUpperCase()}</h1>
         </>
     )
 }
@@ -15,7 +15,7 @@ async function DashboardContent(){
 export default function DashboardPage(){
     return(
         <main>
-            <Suspense fallback={<p className="text-center my-auto">Loading...</p>}>
+            <Suspense fallback={<p className="text-center">Loading...</p>}>
                 <DashboardContent />
             </Suspense>
         </main>
