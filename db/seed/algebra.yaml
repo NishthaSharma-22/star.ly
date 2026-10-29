@@ -3,18 +3,18 @@ name: Algebra
 description: Linear equations, systems and inequalities.
 position: 1
 skills:
-  - slug: linear-equations-in-one-variable
+  - slug: linear-equations-one-variable
     name: Linear equations in one variable
     problems:
       - difficulty: easy
         prompt: |-
           If $2x + 3 = 11$, what is the value of $x$?
-          choices:
-            - body: '$3$'
-            - body: '$4$'
-              correct: true
-            - body: '$7$'
-            - body: '$8$'
-          solution: |-
-            Subtract 3 from both sides to get $2x = 8$,
-            then divide by 2 to get $x = 4$.
+        choices:
+          - body: '$3$'
+          - body: '$4$'
+            correct: true
+          - body: '$7$'
+          - body: '$8$'
+        solution: |-
+          Subtract 3 from both sides to get $2x = 8$,
+          then divide by 2 to get $x = 4$.
