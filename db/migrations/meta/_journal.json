@@ -15,6 +15,13 @@
       "when": 1791807812045,
       "tag": "0001_noisy_absorbing_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793259750665,
+      "tag": "0002_overjoyed_thing",
+      "breakpoints": true
     }
   ]
 }
