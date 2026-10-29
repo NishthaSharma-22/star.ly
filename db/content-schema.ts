@@ -95,3 +95,18 @@ export const solutions = pgTable(
     unique("solutions_problem_position_unique").on(t.problemId, t.position),
   ],
 );
+
+export const problemAnswers = pgTable(
+  "problem_answers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    problemId: uuid("problem_id")
+      .notNull()
+      .references(() => problems.id, { onDelete: "cascade" }),
+    position: smallint("position").notNull(),
+    value: text("value").notNull(),
+  },
+  (t) => [
+    unique("answers_problem_position_unique").on(t.problemId, t.position),
+  ],
+);
