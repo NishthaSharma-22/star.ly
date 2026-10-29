@@ -5,8 +5,10 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { parse } from "yaml";
 import { z } from "zod";
+import { parseAnswer } from "../lib/answers";
 import {
   modules,
+  problemAnswers,
   problemChoices,
   problems,
   skills,
@@ -17,23 +19,35 @@ config({ path: ".env.local" });
 
 const slugSchema = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/);
 
-const problemSchema = z
-  .object({
-    difficulty: z.enum(["easy", "medium", "hard"]),
-    prompt: z.string().min(1),
-    choices: z
-      .array(
-        z.object({
-          body: z.string().min(1),
-          correct: z.boolean().optional(),
-        }),
-      )
-      .min(2),
-    solution: z.string().min(1),
-  })
-  .refine((p) => p.choices.filter((c) => c.correct).length === 1, {
-    message: "each problem needs exactly one correct choice",
-  });
+const baseProblem = {
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  prompt: z.string().min(1),
+  solution: z.string().min(1),
+};
+
+const multipleChoiceSchema = z.object({
+  type: z.literal("multiple_choice"),
+  ...baseProblem,
+  choices: z
+    .array(
+      z.object({
+        body: z.string().min(1),
+        correct: z.boolean().optional(),
+      }),
+    )
+    .min(2),
+});
+
+const studentResponseSchema = z.object({
+  type: z.literal("student_response"),
+  ...baseProblem,
+  answers: z.array(z.string().min(1)).min(1),
+});
+
+const problemSchema = z.discriminatedUnion("type", [
+  multipleChoiceSchema,
+  studentResponseSchema,
+]);
 
 const moduleSchema = z.object({
   slug: slugSchema,
@@ -51,6 +65,38 @@ const moduleSchema = z.object({
     .min(1),
 });
 
+type SeedProblem = z.infer<typeof problemSchema>;
+
+function checkProblemRules(
+  file: string,
+  skillSlug: string,
+  index: number,
+  problem: SeedProblem,
+): string[] {
+  const where = `${file}: skill "${skillSlug}", problem ${index + 1}`;
+  const errors: string[] = [];
+
+  if (problem.type === "multiple_choice") {
+    const correctCount = problem.choices.filter((c) => c.correct).length;
+    if (correctCount !== 1) {
+      errors.push(
+        `${where}: needs exactly one correct choice (found ${correctCount})`,
+      );
+    }
+  } else {
+    for (const answer of problem.answers) {
+      const result = parseAnswer(answer);
+      if (!result.ok) {
+        errors.push(
+          `${where}: answer "${answer}" can't be typed by a student (${result.reason})`,
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
 async function main() {
   const seedDir = path.join(process.cwd(), "db", "seed");
   const files = fs
@@ -59,17 +105,28 @@ async function main() {
     .sort();
   if (files.length === 0) throw new Error("No .yaml files found in db/seed");
 
-  const data = files.map((file) => {
+  const errors: string[] = [];
+  const data = files.flatMap((file) => {
     const raw = parse(fs.readFileSync(path.join(seedDir, file), "utf8"));
     const result = moduleSchema.safeParse(raw);
     if (!result.success) {
       for (const issue of result.error.issues) {
-        console.error(`${file}: ${issue.path.join(".")}: ${issue.message}`);
+        errors.push(`${file}: ${issue.path.join(".")}: ${issue.message}`);
       }
-      throw new Error(`Invalid seed file: ${file}`);
+      return [];
     }
-    return result.data;
+    for (const skill of result.data.skills) {
+      skill.problems.forEach((problem, index) => {
+        errors.push(...checkProblemRules(file, skill.slug, index, problem));
+      });
+    }
+    return [result.data];
   });
+
+  if (errors.length > 0) {
+    for (const message of errors) console.error(message);
+    throw new Error(`Seed validation failed (${errors.length} problem(s))`);
+  }
 
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -110,21 +167,31 @@ async function main() {
               .insert(problems)
               .values({
                 skillId: s.id,
-                type: "multiple_choice",
+                type: prob.type,
                 difficulty: prob.difficulty,
                 prompt: prob.prompt,
                 status: "published",
               })
               .returning({ id: problems.id });
 
-            await tx.insert(problemChoices).values(
-              prob.choices.map((c, ci) => ({
-                problemId: p.id,
-                position: ci + 1,
-                body: c.body,
-                isCorrect: c.correct === true,
-              })),
-            );
+            if (prob.type === "multiple_choice") {
+              await tx.insert(problemChoices).values(
+                prob.choices.map((c, ci) => ({
+                  problemId: p.id,
+                  position: ci + 1,
+                  body: c.body,
+                  isCorrect: c.correct === true,
+                })),
+              );
+            } else {
+              await tx.insert(problemAnswers).values(
+                prob.answers.map((value, ai) => ({
+                  problemId: p.id,
+                  position: ai + 1,
+                  value,
+                })),
+              );
+            }
 
             await tx.insert(solutions).values({
               problemId: p.id,
