@@ -8,4 +8,6 @@ export const waitlist = pgTable("waitlist", {
     .notNull(),
 });
 
-export * from "./auth-schema"
+export * from "./auth-schema";
+
+export * from "./content-schema";
