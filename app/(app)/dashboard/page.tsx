@@ -21,14 +21,10 @@ async function DashboardContent() {
         Hi, {user.name.toUpperCase()}
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch">
-        <div className="flex-1 min-w-0">
-          <StatCard label="Day Streak" value={MOCK_STATS.streak} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <StatCard label="Problems Solved" value={MOCK_STATS.solved} />
-        </div>
-        <div className="flex-1 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <StatCard label="Day Streak" value={MOCK_STATS.streak} />
+        <StatCard label="Problems Solved" value={MOCK_STATS.solved} />
+        <div className="col-span-2 am:col-span-1">
           <UpNextCard {...MOCK_UP_NEXT} />
         </div>
       </div>
@@ -40,7 +36,7 @@ async function DashboardContent() {
         </h2>
         <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
           {SAT_MODULES.map((module) => (
-              <ModuleCard key={module.slug} module={module} />
+            <ModuleCard key={module.slug} module={module} />
           ))}
         </div>
       </section>
@@ -50,7 +46,7 @@ async function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <main className="px-4">
+    <main className="px-4 mx-auto w-full max-w-5xl">
       <Suspense fallback={<p className="text-center">Loading...</p>}>
         <DashboardContent />
       </Suspense>
