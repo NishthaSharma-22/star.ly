@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { config } from "dotenv";
+import { and, eq, notInArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { parse } from "yaml";
@@ -20,6 +21,7 @@ config({ path: ".env.local" });
 const slugSchema = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/);
 
 const baseProblem = {
+  key: slugSchema,
   difficulty: z.enum(["easy", "medium", "hard"]),
   prompt: z.string().min(1),
   solution: z.string().min(1),
@@ -70,10 +72,9 @@ type SeedProblem = z.infer<typeof problemSchema>;
 function checkProblemRules(
   file: string,
   skillSlug: string,
-  index: number,
   problem: SeedProblem,
 ): string[] {
-  const where = `${file}: skill "${skillSlug}", problem ${index + 1}`;
+  const where = `${file}: skill "${skillSlug}", problem "${problem.key}"`;
   const errors: string[] = [];
 
   if (problem.type === "multiple_choice") {
@@ -106,6 +107,8 @@ async function main() {
   if (files.length === 0) throw new Error("No .yaml files found in db/seed");
 
   const errors: string[] = [];
+  const seenKeys = new Set<string>();
+
   const data = files.flatMap((file) => {
     const raw = parse(fs.readFileSync(path.join(seedDir, file), "utf8"));
     const result = moduleSchema.safeParse(raw);
@@ -116,9 +119,13 @@ async function main() {
       return [];
     }
     for (const skill of result.data.skills) {
-      skill.problems.forEach((problem, index) => {
-        errors.push(...checkProblemRules(file, skill.slug, index, problem));
-      });
+      for (const problem of skill.problems) {
+        if (seenKeys.has(problem.key)) {
+          errors.push(`${file}: duplicate problem key "${problem.key}"`);
+        }
+        seenKeys.add(problem.key);
+        errors.push(...checkProblemRules(file, skill.slug, problem));
+      }
     }
     return [result.data];
   });
@@ -132,14 +139,11 @@ async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle({ client: pool });
 
-  let problemCount = 0;
+  const seededKeys: string[] = [];
+  let archivedKeys: string[] = [];
 
   try {
     await db.transaction(async (tx) => {
-      await tx.delete(problems);
-      await tx.delete(skills);
-      await tx.delete(modules);
-
       for (const mod of data) {
         const [m] = await tx
           .insert(modules)
@@ -148,6 +152,14 @@ async function main() {
             name: mod.name,
             description: mod.description,
             position: mod.position,
+          })
+          .onConflictDoUpdate({
+            target: modules.slug,
+            set: {
+              name: mod.name,
+              description: mod.description,
+              position: mod.position,
+            },
           })
           .returning({ id: modules.id });
 
@@ -160,19 +172,43 @@ async function main() {
               name: skill.name,
               position: si + 1,
             })
+            .onConflictDoUpdate({
+              target: [skills.moduleId, skills.slug],
+              set: { name: skill.name, position: si + 1 },
+            })
             .returning({ id: skills.id });
 
           for (const prob of skill.problems) {
             const [p] = await tx
               .insert(problems)
               .values({
+                key: prob.key,
                 skillId: s.id,
                 type: prob.type,
                 difficulty: prob.difficulty,
                 prompt: prob.prompt,
                 status: "published",
               })
+              .onConflictDoUpdate({
+                target: problems.key,
+                set: {
+                  skillId: s.id,
+                  type: prob.type,
+                  difficulty: prob.difficulty,
+                  prompt: prob.prompt,
+                  status: "published",
+                  updatedAt: new Date(),
+                },
+              })
               .returning({ id: problems.id });
+
+            await tx
+              .delete(problemChoices)
+              .where(eq(problemChoices.problemId, p.id));
+            await tx
+              .delete(problemAnswers)
+              .where(eq(problemAnswers.problemId, p.id));
+            await tx.delete(solutions).where(eq(solutions.problemId, p.id));
 
             if (prob.type === "multiple_choice") {
               await tx.insert(problemChoices).values(
@@ -199,15 +235,34 @@ async function main() {
               body: prob.solution,
             });
 
-            problemCount += 1;
+            seededKeys.push(prob.key);
           }
         }
+      }
+
+      if (seededKeys.length > 0) {
+        const archived = await tx
+          .update(problems)
+          .set({ status: "draft", updatedAt: new Date() })
+          .where(
+            and(
+              notInArray(problems.key, seededKeys),
+              eq(problems.status, "published"),
+            ),
+          )
+          .returning({ key: problems.key });
+        archivedKeys = archived.map((row) => row.key);
       }
     });
 
     console.log(
-      `Seeded ${data.length} module(s) and ${problemCount} problem(s).`,
+      `Seeded ${data.length} module(s) and ${seededKeys.length} problem(s).`,
     );
+    if (archivedKeys.length > 0) {
+      console.log(
+        `Archived ${archivedKeys.length} problem(s) no longer in the YAML: ${archivedKeys.join(", ")}`,
+      );
+    }
   } finally {
     await pool.end();
   }
