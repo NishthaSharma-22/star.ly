@@ -4,6 +4,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import {
+  attempts,
   problemAnswers,
   problemChoices,
   problems,
@@ -11,6 +12,7 @@ import {
 } from "@/db/schema";
 import { gradeStudentResponse, INVALID_MESSAGES } from "@/lib/answers";
 import { requireSession } from "@/lib/auth-utils";
+import { getLocalDate } from "@/lib/dates";
 
 export type AnswerResult =
   | { status: "idle" }
@@ -22,23 +24,25 @@ const inputSchema = z.object({
   problemId: z.uuid(),
   choice: z.uuid().optional(),
   answer: z.string().max(20).optional(),
+  timezone: z.string().max(64).optional(),
 });
 
 export async function submitAnswer(
   _prevState: AnswerResult,
   formData: FormData,
 ): Promise<AnswerResult> {
-  await requireSession();
+  const session = await requireSession();
 
   const parsed = inputSchema.safeParse({
     problemId: formData.get("problemId"),
     choice: formData.get("choice") ?? undefined,
     answer: formData.get("answer") ?? undefined,
+    timezone: formData.get("timezone") ?? undefined,
   });
   if (!parsed.success) {
     return { status: "invalid", message: "Something went wrong. Try again." };
   }
-  const { problemId, choice, answer } = parsed.data;
+  const { problemId, choice, answer, timezone } = parsed.data;
 
   const [problem] = await db
     .select({ id: problems.id, type: problems.type })
@@ -50,13 +54,17 @@ export async function submitAnswer(
   }
 
   let isCorrect: boolean;
+  let response: string;
 
   if (problem.type === "multiple_choice") {
     if (!choice) {
       return { status: "invalid", message: "Pick an answer choice." };
     }
     const [row] = await db
-      .select({ isCorrect: problemChoices.isCorrect })
+      .select({
+        isCorrect: problemChoices.isCorrect,
+        body: problemChoices.body,
+      })
       .from(problemChoices)
       .where(
         and(
@@ -69,6 +77,7 @@ export async function submitAnswer(
       return { status: "invalid", message: "Pick one of the choices shown." };
     }
     isCorrect = row.isCorrect;
+    response = row.body;
   } else {
     const accepted = await db
       .select({ value: problemAnswers.value })
@@ -83,7 +92,16 @@ export async function submitAnswer(
       return { status: "invalid", message: INVALID_MESSAGES[result.reason] };
     }
     isCorrect = result.status === "correct";
+    response = (answer ?? "").trim();
   }
+
+  await db.insert(attempts).values({
+    userId: session.user.id,
+    problemId,
+    isCorrect,
+    response,
+    localDate: getLocalDate(timezone),
+  });
 
   const solutionRows = await db
     .select({ body: solutions.body })
