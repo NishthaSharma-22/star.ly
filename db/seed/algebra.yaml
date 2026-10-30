@@ -6,7 +6,8 @@ skills:
   - slug: linear-equations-one-variable
     name: Linear equations in one variable
     problems:
-      - type: multiple_choice
+      - key: alg-linear-001
+        type: multiple_choice
         difficulty: easy
         prompt: |-
           If $2x + 3 = 11$, what is the value of $x$?

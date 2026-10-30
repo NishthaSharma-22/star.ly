@@ -48,6 +48,7 @@ export const problems = pgTable(
   "problems",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    key: text("key").notNull().unique(),
     skillId: uuid("skill_id")
       .notNull()
       .references(() => skills.id, { onDelete: "restrict" }),

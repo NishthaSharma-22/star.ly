@@ -29,6 +29,13 @@
       "when": 1793268599796,
       "tag": "0003_wandering_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793342458156,
+      "tag": "0004_tricky_doctor_octopus",
+      "breakpoints": true
     }
   ]
 }
