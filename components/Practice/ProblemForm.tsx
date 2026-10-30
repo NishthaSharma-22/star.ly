@@ -31,8 +31,12 @@ export function ProblemForm({ problem }: { problem: ProblemData }) {
     problem.type === "multiple_choice"
       ? selected !== null
       : answer.trim() !== "";
+    function handleAction(formData: FormData){
+      formData.set("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone);
+      formAction(formData)
+    }
   return (
-    <form action={formAction}>
+    <form action={handleAction}>
       <input type="hidden" name="problemId" value={problem.id} />
 
       <div>
