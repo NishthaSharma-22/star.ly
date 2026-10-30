@@ -11,3 +11,5 @@ export const waitlist = pgTable("waitlist", {
 export * from "./auth-schema";
 
 export * from "./content-schema";
+
+export * from "./progress-schema";
