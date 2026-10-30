@@ -29,7 +29,7 @@ async function PracticeContent({ params }: PageProps) {
           <span className="bg-yellow-200 text-sm">
             {DIFFICULTY_LABELS[problem.difficulty]}
           </span>
-          <ProblemForm problem={problem} />
+          <ProblemForm key={problem.id} problem={problem} />
         </>
       ) : (
         <p>No problems for this skill yet. Check back soon.</p>

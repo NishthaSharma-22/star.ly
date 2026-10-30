@@ -2,8 +2,10 @@
 
 import { MAX_LENGTH } from "@/lib/answers";
 import { MathText } from "./MathText";
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
+import { submitAnswer, type AnswerResult } from "@/lib/actions/submit-answer";
 
 type ProblemData = {
   id: string;
@@ -15,21 +17,30 @@ type ProblemData = {
 const letters = ["A", "B", "C", "D"];
 
 export function ProblemForm({ problem }: { problem: ProblemData }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
+  const [state, formAction, pending] = useActionState<AnswerResult, FormData>(
+    submitAnswer,
+    { status: "idle" },
+  );
+
+  const graded = state.status === "correct" || state.status === "incorrect";
 
   const canSubmit =
     problem.type === "multiple_choice"
       ? selected !== null
       : answer.trim() !== "";
   return (
-    <form onSubmit={(event) => event.preventDefault()}>
+    <form action={formAction}>
+      <input type="hidden" name="problemId" value={problem.id} />
+
       <div>
         <MathText>{problem.prompt}</MathText>
       </div>
 
       {problem.type === "multiple_choice" ? (
-        <fieldset>
+        <fieldset disabled={graded}>
           <legend>Answer Choices</legend>
           {problem.choices.map((choice, index) => (
             <label
@@ -63,6 +74,7 @@ export function ProblemForm({ problem }: { problem: ProblemData }) {
             value={answer}
             onChange={(event) => setAnswer(event.target.value)}
             maxLength={MAX_LENGTH + 1}
+            disabled={graded}
             autoComplete="off"
             autoCapitalize="none"
             spellCheck={false}
@@ -74,9 +86,31 @@ export function ProblemForm({ problem }: { problem: ProblemData }) {
           </p>
         </div>
       )}
-      <Button type="submit" disabled={!canSubmit}>
-        Check Answer
-      </Button>
+
+      {state.status === "invalid" && (
+        <p role="alert" className="text-sm text-destructive">
+          {state.message}
+        </p>
+      )}
+
+      {graded ? (
+        <div>
+          <p>{state.status === "correct" ? "Correct!" : "Not quite."}</p>
+          {state.solutions.map((solution, index) => (
+            <div key={index}>
+              <p>Solution</p>
+              <MathText>{solution}</MathText>
+            </div>
+          ))}
+          <Button type="button" onClick={() => router.refresh()}>
+            Next problem
+          </Button>
+        </div>
+      ) : (
+        <Button type="submit" disabled={!canSubmit || pending}>
+          {pending ? "Checking..." : "Check answer"}
+        </Button>
+      )}
     </form>
   );
 }
