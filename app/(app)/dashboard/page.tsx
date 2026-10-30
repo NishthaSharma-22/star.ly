@@ -3,9 +3,10 @@ import { StatCard } from "@/components/Dashboard/StatCard";
 import { UpNextCard } from "@/components/Dashboard/UpNextCard";
 import { requireSession } from "@/lib/auth-utils";
 import { SAT_MODULES } from "@/lib/course-content";
+import { getSolvedCount } from "@/lib/progress";
 import { Suspense } from "react";
 
-const MOCK_STATS = { streak: 3, solved: 47 };
+const MOCK_STATS = { streak: 3 };
 const MOCK_UP_NEXT = {
   topic: "Linear Equations in one variable",
   moduleName: "Algebra",
@@ -14,7 +15,7 @@ const MOCK_UP_NEXT = {
 
 async function DashboardContent() {
   const { user } = await requireSession();
-
+  const solved = await getSolvedCount(user.id);
   return (
     <>
       <h1 className="text-2xl font-semibold mt-5">
@@ -23,7 +24,7 @@ async function DashboardContent() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard label="Day Streak" value={MOCK_STATS.streak} />
-        <StatCard label="Problems Solved" value={MOCK_STATS.solved} />
+        <StatCard label="Problems Solved" value={solved} />
         <div className="col-span-2 am:col-span-1">
           <UpNextCard {...MOCK_UP_NEXT} />
         </div>
