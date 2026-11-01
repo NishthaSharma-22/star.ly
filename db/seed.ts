@@ -18,6 +18,8 @@ import {
 
 config({ path: ".env.local" });
 
+const IMAGE_PATTERN = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+
 const slugSchema = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/);
 
 const baseProblem = {
@@ -169,6 +171,17 @@ function checkProblemRules(
   const where = `${file}: skill "${skillSlug}", problem "${problem.key}"`;
   const errors: string[] = [];
 
+  const texts = [
+    problem.prompt,
+    problem.solution,
+    ...(problem.type === "multiple_choice"
+      ? problem.choices.map((choice) => choice.body)
+      : []),
+  ];
+  for (const text of texts) {
+    errors.push(...checkImages(text, where));
+  }
+
   if (problem.type === "multiple_choice") {
     const correctCount = problem.choices.filter((c) => c.correct).length;
     if (correctCount !== 1) {
@@ -187,6 +200,25 @@ function checkProblemRules(
     }
   }
 
+  return errors;
+}
+
+function checkImages(text: string, where: string): string[] {
+  const errors: string[] = [];
+  for (const match of text.matchAll(IMAGE_PATTERN)) {
+    const alt = match[1];
+    const src = match[2];
+    if (alt.trim() === "") {
+      errors.push(`${where}: image "${src}" needs alt text`);
+    }
+    if (!src.startsWith("/problems/") || src.includes("..")) {
+      errors.push(`${where}: image "${src}"  must be under /problems/`);
+      continue;
+    }
+    if (!fs.existsSync(path.join(process.cwd(), "public", src))) {
+      errors.push(`${where}: image file not found: public${src}`);
+    }
+  }
   return errors;
 }
 
