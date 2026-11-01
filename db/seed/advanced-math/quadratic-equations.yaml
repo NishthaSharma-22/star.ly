@@ -1,0 +1,18 @@
+slug: quadratic-equations
+name: Quadratic equations
+position: 10
+problems:
+  - key: adv-quadratic-001
+    type: multiple_choice
+    difficulty: easy
+    prompt: |-
+      What is the sum of the solutions to the equation $x^2 - 7x + 10 = 0$?
+    choices:
+      - body: '$-7$'
+      - body: '$3$'
+      - body: '$7$'
+        correct: true
+      - body: '$10$'
+    solution: |-
+      Factor the quadratic: $x^2 - 7x + 10 = (x - 2)(x - 5) = 0$,
+      so $x = 2$ or $x = 5$. The sum of the solutions is $2 + 5 = 7$.

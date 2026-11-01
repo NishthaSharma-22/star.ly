@@ -1,0 +1,15 @@
+slug: right-triangles
+name: Right triangles and trigonometry
+position: 10
+problems:
+  - key: geo-right-001
+    type: student_response
+    difficulty: medium
+    prompt: |-
+      In right triangle $ABC$, angle $C$ is the right angle, $AC = 8$, and $BC = 15$.
+      What is the value of $\cos A$? Enter your answer as a fraction.
+    answers:
+      - '8/17'
+    solution: |-
+      By the Pythagorean theorem, $AB = \sqrt{8^2 + 15^2} = \sqrt{289} = 17$.
+      Cosine is adjacent over hypotenuse, so $\cos A = \frac{AC}{AB} = \frac{8}{17}$.
