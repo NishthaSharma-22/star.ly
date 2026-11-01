@@ -67,6 +67,98 @@ const moduleSchema = z.object({
     .min(1),
 });
 
+const moduleMetaSchema = z.object({
+  slug: slugSchema,
+  name: z.string().min(1),
+  description: z.string().min(1),
+  position: z.number().int().positive(),
+});
+
+const skillFileSchema = z.object({
+  slug: slugSchema,
+  name: z.string().min(1),
+  position: z.number().int().positive(),
+  problems: z.array(problemSchema),
+});
+
+type SeedModule = z.infer<typeof moduleSchema>;
+
+function readYaml(filePath: string): unknown {
+  return parse(fs.readFileSync(filePath, "utf8"));
+}
+
+function addIssues(errors: string[], label: string, error: z.ZodError) {
+  for (const issue of error.issues) {
+    errors.push(`${label}: ${issue.path.join(".")}: ${issue.message}`);
+  }
+}
+
+function loadModules(seedDir: string, errors: string[]): SeedModule[] {
+  const found: SeedModule[] = [];
+  const entries = fs
+    .readdirSync(seedDir, { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const entry of entries) {
+    if (entry.isFile() && entry.name.endsWith(".yaml")) {
+      const result = moduleSchema.safeParse(
+        readYaml(path.join(seedDir, entry.name)),
+      );
+      if (!result.success) {
+        addIssues(errors, entry.name, result.error);
+        continue;
+      }
+      found.push(result.data);
+    } else if (entry.isDirectory()) {
+      const dir = path.join(seedDir, entry.name);
+      const metaPath = path.join(dir, "module.yaml");
+      if (!fs.existsSync(metaPath)) {
+        errors.push(`${entry.name}/: missing module.yaml`);
+        continue;
+      }
+
+      const meta = moduleMetaSchema.safeParse(readYaml(metaPath));
+      if (!meta.success) {
+        addIssues(errors, `${entry.name}/module.yaml`, meta.error);
+        continue;
+      }
+
+      const skillFiles = fs
+        .readdirSync(dir)
+        .filter((f) => f.endsWith(".yaml") && f !== "module.yaml")
+        .sort();
+      if (skillFiles.length === 0) {
+        errors.push(`${entry.name}/: no skill files found`);
+        continue;
+      }
+
+      const loaded: z.infer<typeof skillFileSchema>[] = [];
+      for (const file of skillFiles) {
+        const result = skillFileSchema.safeParse(
+          readYaml(path.join(dir, file)),
+        );
+        if (!result.success) {
+          addIssues(errors, `${entry.name}/${file}`, result.error);
+          continue;
+        }
+        loaded.push(result.data);
+      }
+      loaded.sort((a, b) => a.position - b.position);
+
+      found.push({
+        ...meta.data,
+        skills: loaded.map(({ slug, name, problems }) => ({
+          slug,
+          name,
+          problems,
+        })),
+      });
+    }
+  }
+
+  return found;
+}
+
 type SeedProblem = z.infer<typeof problemSchema>;
 
 function checkProblemRules(
@@ -100,35 +192,41 @@ function checkProblemRules(
 
 async function main() {
   const seedDir = path.join(process.cwd(), "db", "seed");
-  const files = fs
-    .readdirSync(seedDir)
-    .filter((f) => f.endsWith(".yaml"))
-    .sort();
-  if (files.length === 0) throw new Error("No .yaml files found in db/seed");
 
   const errors: string[] = [];
-  const seenKeys = new Set<string>();
+  const data = loadModules(seedDir, errors);
+  if (data.length === 0 && errors.length === 0) {
+    throw new Error("No seed content found in db/seed");
+  }
 
-  const data = files.flatMap((file) => {
-    const raw = parse(fs.readFileSync(path.join(seedDir, file), "utf8"));
-    const result = moduleSchema.safeParse(raw);
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        errors.push(`${file}: ${issue.path.join(".")}: ${issue.message}`);
-      }
-      return [];
+  const seenKeys = new Set<string>();
+  const seenModules = new Set<string>();
+  for (const mod of data) {
+    if (seenModules.has(mod.slug)) {
+      errors.push(`duplicate module slug "${mod.slug}"`);
     }
-    for (const skill of result.data.skills) {
+    seenModules.add(mod.slug);
+
+    const seenSkills = new Set<string>();
+    for (const skill of mod.skills) {
+      if (seenSkills.has(skill.slug)) {
+        errors.push(
+          `module "${mod.slug}": duplicate skill slug "${skill.slug}"`,
+        );
+      }
+      seenSkills.add(skill.slug);
+
       for (const problem of skill.problems) {
         if (seenKeys.has(problem.key)) {
-          errors.push(`${file}: duplicate problem key "${problem.key}"`);
+          errors.push(
+            `duplicate problem key "${problem.key}" (module "${mod.slug}", skill "${skill.slug}")`,
+          );
         }
         seenKeys.add(problem.key);
-        errors.push(...checkProblemRules(file, skill.slug, problem));
+        errors.push(...checkProblemRules(mod.slug, skill.slug, problem));
       }
     }
-    return [result.data];
-  });
+  }
 
   if (errors.length > 0) {
     for (const message of errors) console.error(message);
