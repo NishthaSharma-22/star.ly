@@ -1,6 +1,7 @@
 import { User } from "lucide-react";
 import { SignOutButton } from "../Auth/SignOutButton";
 import { requireSession } from "@/lib/auth-utils";
+import Link from "next/link";
 
 async function Navbar() {
   const { user } = await requireSession();
@@ -10,7 +11,7 @@ async function Navbar() {
       <div className="flex justify-between p-5 items-center bg-secondary">
         <div>
           {/* TODO: replace text with logo here later */}
-          <p>Star.ly</p>
+          <Link href="/dashboard">Star.ly</Link>
         </div>
         <div className="flex items-center gap-4">
           {/* name and log out buttons here */}

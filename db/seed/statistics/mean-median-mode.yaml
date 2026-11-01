@@ -1,0 +1,20 @@
+slug: mean-median-mode
+name: Mean, median and mode
+position: 10
+problems:
+  - key: stat-mean-001
+    type: multiple_choice
+    difficulty: easy
+    prompt: |-
+      The mean of five numbers is 12. Four of the numbers are 8, 10, 14, and 15.
+      What is the fifth number?
+    choices:
+      - body: '$12$'
+      - body: '$13$'
+        correct: true
+      - body: '$47$'
+      - body: '$60$'
+    solution: |-
+      The five numbers have a total of $5 \times 12 = 60$.
+      The four known numbers add up to $8 + 10 + 14 + 15 = 47$,
+      so the fifth number is $60 - 47 = 13$.

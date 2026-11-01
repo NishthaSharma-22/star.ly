@@ -1,0 +1,30 @@
+slug: right-triangles
+name: Right triangles and trigonometry
+position: 10
+problems:
+  - key: geo-right-001
+    type: student_response
+    difficulty: medium
+    prompt: |-
+      In right triangle $ABC$, angle $C$ is the right angle, $AC = 8$, and $BC = 15$.
+      What is the value of $\cos A$? Enter your answer as a fraction.
+    answers:
+      - '8/17'
+    solution: |-
+      By the Pythagorean theorem, $AB = \sqrt{8^2 + 15^2} = \sqrt{289} = 17$.
+      Cosine is adjacent over hypotenuse, so $\cos A = \frac{AC}{AB} = \frac{8}{17}$.
+
+  - key: geo-right-002
+    type: student_response
+    difficulty: medium
+    prompt: |-
+      Triangle $DEF$ is shown below.
+
+      ![Right triangle DEF with the right angle at E. Side DE is 9 and side EF is 12.](/problems/geometry/geo-right-002/figure-1.jpg)
+      What is the value of $\tan D$? Enter your answer as a fraction.
+    answers:
+      - '4/3'
+    solution: |-
+      Tangent is opposite over adjacent. The side opposite angle $D$ is $EF = 12$,
+      and the side adjacent to angle $D$ is $DE = 9$.
+      So $\tan D = \frac{12}{9} = \frac{4}{3}$.
