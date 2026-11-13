@@ -1,7 +1,7 @@
-import { CourseModule } from "@/lib/course-content";
+import type { DashboardModule } from "@/lib/dashboard-summary";
 import Link from "next/link";
 
-export function ModuleCard({ module }: { module: CourseModule }) {
+export function ModuleCard({ module }: { module: DashboardModule }) {
   return (
     <Link
       href={`/practice/${module.slug}`}
