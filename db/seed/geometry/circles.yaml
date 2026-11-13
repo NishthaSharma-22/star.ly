@@ -1,0 +1,18 @@
+slug: circles
+name: Circles
+position: 20
+problems:
+  - key: geo-circles-001
+    type: multiple_choice
+    difficulty: medium
+    prompt: |-
+      A circle has an area of $36\pi$. What is the circumference of the circle?
+    choices:
+      - body: '$6\pi$'
+      - body: '$12\pi$'
+        correct: true
+      - body: '$36\pi$'
+      - body: '$72\pi$'
+    solution: |-
+      The area of a circle is $\pi r^2$, so $\pi r^2 = 36\pi$ and $r^2 = 36$, which gives $r = 6$.
+      The circumference is $2\pi r = 2\pi(6) = 12\pi$.
