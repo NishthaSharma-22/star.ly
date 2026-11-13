@@ -2,20 +2,16 @@ import { ModuleCard } from "@/components/Dashboard/ModuleCard";
 import { StatCard } from "@/components/Dashboard/StatCard";
 import { UpNextCard } from "@/components/Dashboard/UpNextCard";
 import { requireSession } from "@/lib/auth-utils";
-import { SAT_MODULES } from "@/lib/course-content";
+import { getDashboard } from "@/lib/dashboard";
 import { getSolvedCount } from "@/lib/progress";
 import { Suspense } from "react";
 
-const MOCK_STATS = { streak: 3 };
-const MOCK_UP_NEXT = {
-  topic: "Linear Equations in one variable",
-  moduleName: "Algebra",
-  href: "/practice/algebra/linear-equations-one-variable",
-};
-
 async function DashboardContent() {
   const { user } = await requireSession();
-  const solved = await getSolvedCount(user.id);
+  const [solved, dashboard] = await Promise.all([
+    getSolvedCount(user.id),
+    getDashboard(user.id)
+  ])
   return (
     <>
       <h1 className="text-2xl font-semibold mt-5">
@@ -23,10 +19,10 @@ async function DashboardContent() {
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <StatCard label="Day Streak" value={MOCK_STATS.streak} />
+        {/* <StatCard label="Day Streak" value={MOCK_STATS.streak} /> */}
         <StatCard label="Problems Solved" value={solved} />
         <div className="col-span-2 am:col-span-1">
-          <UpNextCard {...MOCK_UP_NEXT} />
+          {dashboard.upNext ? <UpNextCard {...dashboard.upNext} /> : null}
         </div>
       </div>
       <hr />
@@ -36,7 +32,7 @@ async function DashboardContent() {
           SAT Math
         </h2>
         <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
-          {SAT_MODULES.map((module) => (
+          {dashboard.modules.map((module) => (
             <ModuleCard key={module.slug} module={module} />
           ))}
         </div>
