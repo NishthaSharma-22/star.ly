@@ -1,7 +1,7 @@
 import { ProblemForm } from "@/components/Practice/ProblemForm";
 import { requireSession } from "@/lib/auth-utils";
 import { DIFFICULTY_LABELS } from "@/lib/difficulty";
-import { getRandomProblem, getSkill } from "@/lib/practice";
+import { getNextProblem, getSkill } from "@/lib/practice";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -16,7 +16,9 @@ async function PracticeContent({ params }: PageProps) {
   const skill = await getSkill(moduleSlug, skillSlug);
   if (!skill) notFound();
 
-  const problem = await getRandomProblem(skill.skillId);
+  const { user } = await requireSession();
+
+  const problem = await getNextProblem(skill.skillId, user.id);
 
   return (
     <>

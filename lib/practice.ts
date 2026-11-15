@@ -1,4 +1,4 @@
-import { and, asc, countDistinct, eq, sql, count, inArray } from "drizzle-orm";
+import { and, asc, countDistinct, eq, sql, count, inArray, max } from "drizzle-orm";
 import { db } from "@/db";
 import {
   attempts,
@@ -7,6 +7,7 @@ import {
   problems,
   skills,
 } from "@/db/schema";
+import { pickProblemId } from "./picker";
 
 export async function getSkill(moduleSlug: string, skillSlug: string) {
   const [row] = await db
@@ -23,7 +24,36 @@ export async function getSkill(moduleSlug: string, skillSlug: string) {
   return row ?? null;
 }
 
-export async function getRandomProblem(skillId: string) {
+export async function getNextProblem(skillId: string, userId: string) {
+  const published = await db
+    .select({ id: problems.id })
+    .from(problems)
+    .where(
+      and(eq(problems.skillId, skillId), eq(problems.status, "published")),
+    );
+  const ids = published.map((row) => row.id);
+  if (ids.length === 0) return null;
+
+  const history = await db
+    .select({
+      problemId: attempts.problemId,
+      everCorrect: sql<boolean>`bool_or(${attempts.isCorrect})`,
+      lastAttemptAt: max(attempts.createdAt),
+    })
+    .from(attempts)
+    .where(and(eq(attempts.userId, userId), inArray(attempts.problemId, ids)))
+    .groupBy(attempts.problemId);
+
+  const chosenId = pickProblemId(
+    ids,
+    history.map((row) => ({
+      problemId: row.problemId,
+      everCorrect: row.everCorrect,
+      lastAttemptAt: new Date(row.lastAttemptAt ?? 0),
+    })),
+  );
+  if (!chosenId) return null;
+
   const [problem] = await db
     .select({
       id: problems.id,
@@ -32,10 +62,8 @@ export async function getRandomProblem(skillId: string) {
       prompt: problems.prompt,
     })
     .from(problems)
-    .where(and(eq(problems.skillId, skillId), eq(problems.status, "published")))
-    .orderBy(sql`random()`)
+    .where(eq(problems.id, chosenId))
     .limit(1);
-
   if (!problem) return null;
 
   const choices =
@@ -53,7 +81,6 @@ export async function getRandomProblem(skillId: string) {
 
   return { ...problem, choices };
 }
-
 export async function getModuleOverview(moduleSlug: string, userId: string) {
   const [mod] = await db
     .select({
