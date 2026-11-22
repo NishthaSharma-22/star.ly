@@ -87,6 +87,17 @@ function SignUpForm() {
         </p>
       )}
 
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="ageConfirmed" required className="mt-1" />
+        <span>
+          I am 13 or older and I have read the{" "}
+          <Link href="/privacy" className="underline hover:text-primary" target="_blank">
+            privacy policy
+          </Link>
+          .
+        </span>
+      </label>
+
       <Button type="submit" disabled={pending}>
         {pending ? "Creating account..." : "Sign up"}
       </Button>
