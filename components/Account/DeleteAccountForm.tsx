@@ -1,8 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { Button } from "@base-ui/react";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ShowPassword } from "../Auth/ShowPassword";
 
@@ -73,7 +72,7 @@ export function DeleteAccountForm() {
         <label htmlFor="confirmation">Type DELETE to confirm</label>
         <input
           id="confirmation"
-          name="completion"
+          name="confirmation"
           autoComplete="off"
           className="px-1 py-1 border focus:outline-none"
           required
