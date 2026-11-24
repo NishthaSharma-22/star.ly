@@ -15,10 +15,12 @@ async function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           {/* name and log out buttons here */}
-          <span className="flex items-center gap-2">
-            <User size={25} />
-            {user.name}
-          </span>
+          <Link href="/account">
+            <span className="flex items-center gap-2">
+              <User size={25} />
+              {user.name}
+            </span>
+          </Link>
           <SignOutButton />
         </div>
       </div>
