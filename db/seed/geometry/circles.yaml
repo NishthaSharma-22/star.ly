@@ -2,87 +2,6 @@ slug: circles
 name: Circles
 position: 20
 problems:
-  - key: geo-circles-001
-    type: multiple_choice
-    difficulty: medium
-    prompt: |-
-      A circle has an area of $36\pi$. What is the circumference of the circle?
-    choices:
-      - body: '$6\pi$'
-      - body: '$12\pi$'
-        correct: true
-      - body: '$36\pi$'
-      - body: '$72\pi$'
-    solution: |-
-      The area of a circle is $\pi r^2$, so $\pi r^2 = 36\pi$ and $r^2 = 36$, which gives $r = 6$.
-      The circumference is $2\pi r = 2\pi(6) = 12\pi$.
-  - key: geo-circles-002
-    type: multiple_choice
-    difficulty: easy
-    prompt: |-
-      A circle has a radius of 5. What is the area of the circle?
-    choices:
-      - body: '$10\pi$'
-      - body: '$25\pi$'
-        correct: true
-      - body: '$50\pi$'
-      - body: '$100\pi$'
-    solution: |-
-      The area of a circle is $\pi r^2 = \pi(5)^2 = 25\pi$.
-
-  - key: geo-circles-003
-    type: student_response
-    difficulty: easy
-    prompt: |-
-      A circle has a circumference of $10\pi$. What is the radius of the circle?
-    answers:
-      - "5"
-    solution: |-
-      The circumference is $2\pi r$, so $2\pi r = 10\pi$.
-      Dividing both sides by $2\pi$ gives $r = 5$.
-
-  - key: geo-circles-004
-    type: student_response
-    difficulty: medium
-    prompt: |-
-      A sector of a circle has a central angle of $120^\circ$.
-      What fraction of the area of the circle is the sector? Enter your answer as a fraction.
-    answers:
-      - "1/3"
-    solution: |-
-      A full circle is $360^\circ$, so the sector is $\frac{120}{360} = \frac{1}{3}$ of the circle.
-      Its area is the same fraction of the circle's area.
-
-  - key: geo-circles-005
-    type: multiple_choice
-    difficulty: medium
-    prompt: |-
-      An arc of a circle has a central angle of $60^\circ$, and the circle has a radius of 12.
-      What is the length of the arc?
-    choices:
-      - body: '$2\pi$'
-      - body: '$4\pi$'
-        correct: true
-      - body: '$12\pi$'
-      - body: '$24\pi$'
-    solution: |-
-      The circumference is $2\pi(12) = 24\pi$.
-      The arc is $\frac{60}{360} = \frac{1}{6}$ of the circle, so its length is $\frac{1}{6}(24\pi) = 4\pi$.
-
-  - key: geo-circles-006
-    type: student_response
-    difficulty: hard
-    prompt: |-
-      The equation $x^2 + y^2 - 6x + 8y = 11$ defines a circle in the $xy$-plane.
-      What is the radius of the circle?
-    answers:
-      - "6"
-    solution: |-
-      Complete the square in both variables:
-      $(x^2 - 6x + 9) + (y^2 + 8y + 16) = 11 + 9 + 16$,
-      which is $(x - 3)^2 + (y + 4)^2 = 36$.
-      So $r^2 = 36$ and the radius is $6$.
-
   - key: geo-circles-007
     type: multiple_choice
     difficulty: medium
@@ -99,3 +18,4 @@ problems:
       Substitute each point into the equation. For $(2, 8)$:
       $(2 + 1)^2 + (8 - 4)^2 = 9 + 16 = 25$, which matches.
       The center $(-1, 4)$ gives $0$, $(4, 8)$ gives $41$, and $(1, -1)$ gives $29$.
+  - 
