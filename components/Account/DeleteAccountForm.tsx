@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@base-ui/react";
@@ -87,6 +87,9 @@ export function DeleteAccountForm() {
       )}
 
       <div className="flex gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Deleting..." : "Permanently delete my account"}
+        </Button>
         <Button
           type="button"
           disabled={pending}
