@@ -76,12 +76,14 @@ function SignInForm() {
         {pending ? "Getting you in..." : "Log In"}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
-        New to star.ly?{" "}
-        <Link href="/sign-up" className="underline">
+      <div className="text-muted-foreground flex justify-around text-sm underline">
+        <Link href="/sign-up">
           Create an account
         </Link>
-      </p>
+        <Link href="/forgot-password">
+          Forgot password?
+        </Link>
+      </div>
     </form>
   );
 }
