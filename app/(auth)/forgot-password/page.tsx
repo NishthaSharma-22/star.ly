@@ -6,6 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { canSendEmail } from "@/lib/email";
+import { CONTACT_EMAIL } from "@/lib/site";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -19,11 +21,20 @@ export default function ForgotPasswordPage() {
         <CardHeader>
           <CardTitle>Forgot your password?</CardTitle>
           <CardDescription>
-            Enter your email and we will send you a link to choose a new one.
+            {canSendEmail
+              ? "Enter your email and we will send you a link to choose a new one."
+              : "Password reset by email is not available yet."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ForgotPasswordForm />
+          {canSendEmail ? (
+            <ForgotPasswordForm />
+          ) : (
+            <p>
+              Please email <a href={`mailto:${CONTACT_EMAIL}`}></a> and we will
+              help you get back into your account
+            </p>
+          )}
         </CardContent>
       </Card>
     </main>

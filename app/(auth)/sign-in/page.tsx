@@ -1,5 +1,6 @@
 import SignInForm from "@/components/Auth/SignInForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { canSendEmail } from "@/lib/email";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default function SignInPage() {
           <CardTitle>Create your account</CardTitle>
         </CardHeader>
         <CardContent>
-          <SignInForm />
+          <SignInForm showForgotPassword={canSendEmail} />
         </CardContent>
       </Card>
     </main>

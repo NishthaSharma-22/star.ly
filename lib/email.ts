@@ -1,5 +1,9 @@
 import { env } from "./env";
 
+export const canSendEmail =
+  Boolean(env.RESEND_API_KEY && env.EMAIL_FROM) ||
+  process.env.NODE_ENV !== "production";
+
 type Email = { to: string; subject: string; text: string };
 
 export async function sendEmail({ to, subject, text }: Email): Promise<void> {

@@ -22,7 +22,7 @@ export const auth = betterAuth({
       void sendEmail({
         to: user.email,
         subject: "Reset your password",
-        text: `Hi {user.name},\n\nUse this link to reset your password:\n${url}\nThis link expires soon. If you did not ask for this, you can ignore this email. `,
+        text: `Hi ${user.name},\n\nUse this link to reset your password:\n${url}\nThis link expires soon. If you did not ask for this, you can ignore this email. `,
       });
     },
   },
