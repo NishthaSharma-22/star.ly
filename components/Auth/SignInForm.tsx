@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { authClient } from "@/lib/auth-client";
 import { ShowPassword } from "./ShowPassword";
 
@@ -11,6 +11,7 @@ function SignInForm() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [isNavigating, startTransition] = useTransition();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,8 +35,11 @@ function SignInForm() {
         setPending(false);
         return;
       }
-      router.push("/dashboard");
-      router.refresh();
+      setPending(false);
+      startTransition(() => {
+        router.push("/dashboard");
+        router.refresh();
+      });
     } catch {
       setErrorMessage("Something went wrong. Please try again.");
       setPending(false);
@@ -72,17 +76,13 @@ function SignInForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Getting you in..." : "Log In"}
+      <Button type="submit" disabled={pending || isNavigating}>
+        {pending || isNavigating ? "Getting you in..." : "Log In"}
       </Button>
 
       <div className="text-muted-foreground flex justify-around text-sm underline">
-        <Link href="/sign-up">
-          Create an account
-        </Link>
-        <Link href="/forgot-password">
-          Forgot password?
-        </Link>
+        <Link href="/sign-up">Create an account</Link>
+        <Link href="/forgot-password">Forgot password?</Link>
       </div>
     </form>
   );
