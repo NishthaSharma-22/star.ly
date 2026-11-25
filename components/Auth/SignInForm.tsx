@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { authClient } from "@/lib/auth-client";
 import { ShowPassword } from "./ShowPassword";
+import { CONTACT_EMAIL } from "@/lib/site";
 
-function SignInForm() {
+function SignInForm({ showForgotPassword }: { showForgotPassword: boolean}) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -82,7 +83,11 @@ function SignInForm() {
 
       <div className="text-muted-foreground flex justify-around text-sm underline">
         <Link href="/sign-up">Create an account</Link>
-        <Link href="/forgot-password">Forgot password?</Link>
+        {/* <Link href="/forgot-password">Forgot password?</Link> */}
+
+        {showForgotPassword ? (
+          <Link href="/forgot-password">Forgot password?</Link>
+        ):(<a href={`mailto:${CONTACT_EMAIL}`}>Forgot password? Email us</a>)}
       </div>
     </form>
   );
