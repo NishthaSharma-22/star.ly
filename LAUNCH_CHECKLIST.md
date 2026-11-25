@@ -1,0 +1,16 @@
+things kept off for now:
+- email verificaiton on sign up
+- email provider and domain ofc
+- rate limiting
+- terms of service
+- provacy policy update - account deletion part
+- google sign in
+- video solutions 
+- act content
+- switch between courses
+- bookmark
+- prev, next probs
+- leetcode like stats on nmber of probs solved per subtopic
+- leagues
+- confetti on getting a prob rigth
+- maybe no streaks
